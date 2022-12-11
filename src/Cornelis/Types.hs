@@ -59,6 +59,7 @@ data BufferStuff = BufferStuff
   , bs_goals      :: DisplayInfo
   , bs_info_win   :: InfoBuffer
   , bs_code_map   :: LineIntervals
+  , bs_clear_hl   :: Bool
   }
   deriving Generic
 

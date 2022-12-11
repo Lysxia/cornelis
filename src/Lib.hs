@@ -79,14 +79,19 @@ respond b (SolveAll solutions) = do
         replaceInterval b int $ replaceQuestion ex
   load
 respond b ClearHighlighting = do
-  -- delete what we know about goto positions and stored extmarks
-  modifyBufferStuff b $ \bs -> bs
-    & #bs_goto_sites .~ mempty
-    & #bs_ip_exts .~ mempty
-  -- remove the extmarks and highlighting
-  ns <- asks ce_namespace
-  nvim_buf_clear_namespace b ns 0 (-1)
-respond b (HighlightingInfo _remove hl) = do
+  -- Postpone to HighlightingInfo
+  modifyBufferStuff b $ #bs_clear_hl .~ True
+respond b (HighlightingInfo _remove hl) = withBufferStuff b $ \stuff -> do
+  -- Postponed ClearHighlighting here
+  when (bs_clear_hl stuff) $ do
+    -- delete what we know about goto positions and stored extmarks
+    modifyBufferStuff b $
+      (#bs_clear_hl .~ False) .
+      (#bs_goto_sites .~ mempty) .
+      (#bs_ip_exts .~ mempty)
+    -- remove the extmarks and highlighting
+    ns <- asks ce_namespace
+    nvim_buf_clear_namespace b ns 0 (-1)
   extmap <- highlightBuffer b hl
   modifyBufferStuff b $ \bs -> bs
     & #bs_ip_exts <>~ M.compose extmap (fmap ip_interval' $ bs_ips $ bs)

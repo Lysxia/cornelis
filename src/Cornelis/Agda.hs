@@ -130,6 +130,7 @@ withAgda m = do
         , bs_goals = AllGoalsWarnings [] [] [] []
         , bs_info_win = iw
         , bs_code_map = mempty
+        , bs_clear_hl = False
         }
       m
 
